@@ -55,7 +55,7 @@ app.all("*", async (c) => {
     );
   }
 
-  // 2. 复制原始请求头，并强行注入我们的伪装头
+  // 2. 复制原始请求头，注入伪装头
   const headers = new Headers(c.req.header());
   headers.set("Host", "api.bilibili.com");
   headers.set("Referer", "https://www.bilibili.com/");
@@ -72,10 +72,10 @@ app.all("*", async (c) => {
   headers.set("Sec-Fetch-Mode", "cors");
   headers.set("Sec-Fetch-Dest", "empty");
 
-  // 把验证用的暗号从 Header 里摘除
+  // 把验证用的暗号从 Header 里删除
   headers.delete("x-proxy-token");
 
-  // 3. 构建新的请求并发送 (这就是原生 Fetch 的魅力)
+  // 3. 构建新的请求并发送
   const proxyReq = new Request(url.toString(), {
     method: c.req.method,
     headers: headers,
@@ -90,13 +90,13 @@ app.all("*", async (c) => {
   // 1. 克隆 B 站返回的响应头
   const responseHeaders = new Headers(res.headers);
 
-  // 2. 核心修复：删掉压缩声明和旧的长度声明，因为 body 已经被 Node.js 解压成明文了
+  // 2. 删掉压缩声明和旧的长度声明，因为 body 已经被 Node.js 解压成明文
   responseHeaders.delete("content-encoding");
   responseHeaders.delete("content-length");
   // CORS 相关的头也可以加上，防止跨域报错
   responseHeaders.set("Access-Control-Allow-Origin", "*");
 
-  // 3. 组装一个干净的、全新的 Response 返回给你的 CF Worker
+  // 3. 组装全新的 Response
   return new Response(res.body, {
     status: res.status,
     statusText: res.statusText,
