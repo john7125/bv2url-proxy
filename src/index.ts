@@ -8,6 +8,9 @@ app.get("/", (c) => {
   return c.text("Hello bv2url-proxy!");
 });
 
+// 拦截浏览器的 favicon 请求，直接返回 204 (No Content 代表没有内容)
+app.get("/favicon.ico", (c) => c.body(null, 204));
+
 // 保活接口
 app.get("/healthcheck", (c) => {
   const now = new Date();
